@@ -1,4 +1,7 @@
 
 int main(int argc, char *argv[]) {
-    return UIApplicationMain(argc, argv, nil, @"EXAppDelegate");
+    NSAutoreleasePool * pool = [[NSAutoreleasePool alloc] init];
+    int retVal = UIApplicationMain(argc, argv, nil, @"EXAppDelegate");
+    [pool release];
+    return retVal;
 }

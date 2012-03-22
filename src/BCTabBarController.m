@@ -9,21 +9,20 @@
 - (void)loadTabs;
 
 @property (nonatomic, retain) UIImageView *selectedTab;
-@property (nonatomic, readwrite) BOOL visible;
 
 @end
 
 
 @implementation BCTabBarController
-@synthesize viewControllers, tabBar, selectedTab, selectedViewController, tabBarView, visible;
+@synthesize viewControllers, tabBar, selectedTab, selectedViewController, tabBarView;
 
 - (void)loadView {
-	self.tabBarView = [[BCTabBarView alloc] initWithFrame:[[UIScreen mainScreen] applicationFrame]];
+	self.tabBarView = [[[BCTabBarView alloc] initWithFrame:[[UIScreen mainScreen] applicationFrame]] autorelease];
 	self.view = self.tabBarView;
 
 	CGFloat tabBarHeight = 44 + 6; // tabbar + arrow
 	CGFloat adjust = (UI_USER_INTERFACE_IDIOM() == UIUserInterfaceIdiomPhone) ? 1 : 0;
-	self.tabBar = [[BCTabBar alloc] initWithFrame:CGRectMake(0, self.view.bounds.size.height - tabBarHeight, self.view.bounds.size.width, tabBarHeight + adjust)];
+	self.tabBar = [[BCTabBar alloc] initWithFrame:CGRectMake(0, self.view.bounds.size.height - tabBarHeight, self.view.bounds.size.width, tabBarHeight + adjust)] autorelease];
 	self.tabBar.delegate = self;
 	
 	self.tabBarView.backgroundColor = [UIColor clearColor];
@@ -50,7 +49,8 @@
 - (void)setSelectedViewController:(UIViewController *)vc {
 	UIViewController *oldVC = selectedViewController;
 	if (selectedViewController != vc) {
-		selectedViewController = vc;
+		[selectedViewController release];
+		selectedViewController = [vc retain];
         if (!self.childViewControllers && visible) {
 			[oldVC viewWillDisappear:NO];
 			[selectedViewController viewWillAppear:NO];
@@ -110,7 +110,7 @@
 - (void)loadTabs {
 	NSMutableArray *tabs = [NSMutableArray arrayWithCapacity:self.viewControllers.count];
 	for (UIViewController *vc in self.viewControllers) {
-		[tabs addObject:[[BCTab alloc] initWithIconImageName:[vc iconImageName]]];
+		[tabs addObject:[[[BCTab alloc] initWithIconImageName:[vc iconImageName]] autorelease]];
 	}
 	self.tabBar.tabs = tabs;
 	[self.tabBar setSelectedTab:[self.tabBar.tabs objectAtIndex:self.selectedIndex] animated:NO];
@@ -123,7 +123,8 @@
 
 - (void)setViewControllers:(NSArray *)array {
 	if (array != viewControllers) {
-		viewControllers = array;
+		[viewControllers release];
+		viewControllers = [array retain];
 		
 		if (viewControllers != nil) {
 			[self loadTabs];
@@ -131,6 +132,14 @@
 	}
 	
 	self.selectedIndex = 0;
+}
+
+- (void)dealloc {
+	self.viewControllers = nil;
+	self.tabBar = nil;
+	self.selectedTab = nil;
+	self.tabBarView = nil;
+	[super dealloc];
 }
 
 - (BOOL)shouldAutorotateToInterfaceOrientation:(UIInterfaceOrientation)toInterfaceOrientation {
